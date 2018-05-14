@@ -9,6 +9,12 @@
  *            permitted for one Prestashop instance only but you can install it on your test instances.
  */
 
+
+/*
+ * Buscar en el modulo ageconsent el hook utilizado para
+ * mostrar el tpl apenas cargue la pagina
+ */
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -28,8 +34,6 @@ class LandingPage extends Module
 
         $this->displayName = $this->l('Landing Page');
         $this->description = $this->l('Configura el landing page de tu tienda');
-        $this->module_path = _PS_MODULE_DIR_.$this->name.'/';
-		$this->uploads_path = _PS_MODULE_DIR_.$this->name.'/img/';
     }
 
     public function install()
@@ -61,8 +65,17 @@ class LandingPage extends Module
     	$output = null;
 
     	if (Tools::isSubmit('submit'.$this->name)) {
-            $output .= $this->postProcess();
+            $errors = $this->postValidation();
+
+            if (!count($errors)) {
+                 $output .= $this->postProcess();
+            } else {
+                foreach ($errors as $error) {
+                    $output .= $this->displayError($error);
+                }
+            }
         }
+
 
         return $output.$this->displayForm();
     }
@@ -106,8 +119,10 @@ class LandingPage extends Module
     			'icon' => 'icon-camera'
     		),
     		'input' => array(
-    			'type' => 'banner',
-    			'banners' => $this->getBanners()
+    			array(
+    				'type' => 'banner',
+	    			'banners' => $this->getBanners()
+	    		)
     		)
     	);
 
@@ -140,6 +155,10 @@ class LandingPage extends Module
         Configuration::updateValue('lp_whatsapp', Tools::getValue('lp_whatsapp'));
 
         return $this->displayConfirmation($this->l('Configuracion actualizada'));
+    }
+
+    public function postValidation()
+    {
     }
 
     public function addBanner($url_banner)
