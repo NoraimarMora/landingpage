@@ -40,21 +40,20 @@
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$('#guardar').on('click', function() {
-					alert('Imagen guardada');
-					/*$.ajax({
-                        url: '{$url}',
-                        type: 'POST',
-                        {literal}
-                        data: {'url_banner': url_banner},
-                        {/literal}
-                        success: function(data){
-                            alert('Imagen agregada');
-                            location.reload();
-                        },
-                        error: function() {
-                            alert('Ha ocurrido un error al intentar agregar la imagen');
-                        }
-                    });*/
+					var dato_archivo = $('#banner').prop("files")[0];
+				    var split = window.location.pathname.split('/');
+	                var url_ajax = window.location.protocol + '//' + window.location.host + split[0] + '/' + split[1] + '/modules/landingpage/ajaxLandingPageController.php?action=add';
+
+	                // Obtener nombre del archivo
+	                var name = $('#banner').val().split('\\');
+
+					$.ajax({
+	                    url: url_ajax,
+	                    type: 'POST',
+	                    {literal}
+	                    data: {'action': "add"}
+	                    {/literal}
+	                });
 				});
 			});
 
