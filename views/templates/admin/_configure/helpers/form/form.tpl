@@ -28,31 +28,24 @@
 			</div>
 		</div>
 
-		<ul id="items" class="list-unstyled">
-			{foreach from=$banners item=banner}
-				<li id="{$banner.id_banner|escape:'htmlall':'UTF-8'}" class="item">
-					<img src="{$banner.url_banner}" width="383" height="267">
-					<a class="btn btn-info pull-right" onclick="delete({$banner.id_banner})"> <i class="icon-eraser"></i> {l s='Eliminar' mod='landingpage'}</a>
-				</li>
-			{/foreach}
-		</ul>
-
 		<script type="text/javascript">
 			$(document).ready(function() {
 				$('#guardar').on('click', function() {
-					var dato_archivo = $('#banner').prop("files")[0];
-				    var split = window.location.pathname.split('/');
-	                var url_ajax = window.location.protocol + '//' + window.location.host + split[0] + '/' + split[1] + '/modules/landingpage/ajaxLandingPageController.php?action=add';
 
-	                // Obtener nombre del archivo
-	                var name = $('#banner').val().split('\\');
+					var name = document.getElementById('banner').files[0].name;
 
 					$.ajax({
-	                    url: url_ajax,
+	                    url: '{$input.url_add}',
 	                    type: 'POST',
 	                    {literal}
-	                    data: {'action': "add"}
+	                    data: {"img": name},
 	                    {/literal}
+	                    success: function(data) {
+	                    	console.log(data);
+	                    },
+	                    error: function() {
+	                    	console.log('Ha ocurrido un error');
+	                    }
 	                });
 				});
 			});

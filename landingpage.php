@@ -121,7 +121,8 @@ class LandingPage extends Module
     		'input' => array(
     			array(
     				'type' => 'banner',
-	    			'banners' => $this->getBanners()
+                    'url_add' => "".Tools::getHttpHost(true).__PS_BASE_URI__."modules/landingpage/LandingPageController.php?action=add"/*,
+	    			'banners' => $this->getBanners()*/
 	    		)
     		)
     	);
