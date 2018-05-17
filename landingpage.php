@@ -38,19 +38,23 @@ class LandingPage extends Module
 
     public function install()
     {
-    	return parent::install() && $this->installDB();
+    	return parent::install() && $this->installDB() 
+            && $this->registerHook('displayNav');
     }
 
     public function uninstall()
     {
-    	return parent::uninstall() && $this->uninstallDB();
+    	return parent::uninstall() && $this->uninstallDB() 
+            && Configuration::deleteByName('lp_facebook') 
+            && Configuration::deleteByName('lp_instagram') 
+            && Configuration::deleteByName('lp_whatsapp');
     }
 
     public function installDB()
     {
     	return Db::getInstance()->Execute('CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'banner_landingpage`(
     			`id_banner` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-    			`url_banner` VARCHAR(200),
+    			`url_banner` TEXT NOT NULL,
     			PRIMARY KEY (`id_banner`)
     		);');
     }
@@ -75,7 +79,6 @@ class LandingPage extends Module
                 }
             }
         }
-
 
         return $output.$this->displayForm();
     }
@@ -120,17 +123,22 @@ class LandingPage extends Module
     		),
     		'input' => array(
     			array(
-    				'type' => 'banner',
-                    'url_add' => "".Tools::getHttpHost(true).__PS_BASE_URI__."modules/landingpage/LandingPageController.php?action=add"/*,
-	    			'banners' => $this->getBanners()*/
+    				'type' => 'file',
+                    'label' => $this->l('Cargar imagen'),
+                    'name' => 'lp_imagen'
 	    		)
+            ),
+            'submit' => array(
+                'title' => 'Guardar',
+                'class' => 'btn btn-default pull-right'
+            
     		)
     	);
 
     	$values['lp_facebook']   = Configuration::get('lp_facebook');
         $values['lp_instagram']  = Configuration::get('lp_instagram');
         $values['lp_whatsapp']  = Configuration::get('lp_whatsapp');
-
+        $values['lp_imagen']  = Configuration::get('lp_imagen');
 
         $helper                  = new HelperForm();
         $helper->module          = $this;
@@ -155,6 +163,23 @@ class LandingPage extends Module
         Configuration::updateValue('lp_instagram', Tools::getValue('lp_instagram'));
         Configuration::updateValue('lp_whatsapp', Tools::getValue('lp_whatsapp'));
 
+        $target_dir = _PS_MODULE_DIR_ ."landingpage/img/";
+
+        $archivo = Tools::fileAttachment("lp_imagen");
+        $archivo_destino = null; 
+        $ancho_nuevo = null;
+        $alto_nuevo = null;    
+    
+        if ($archivo) {
+            $archivo_destino = $target_dir . basename(str_replace(" ", "_", $archivo['name']));
+    
+            if(!$this->validarImagen($archivo_destino)) {
+                move_uploaded_file($archivo['tmp_name'], $archivo_destino);
+                $nueva_url = "".Tools::getHttpHost(true).__PS_BASE_URI__."modules/landingpage/img/" . str_replace(' ', '-', $archivo['name']);
+                $this->addBanner($nueva_url);
+            }
+        }
+
         return $this->displayConfirmation($this->l('Configuracion actualizada'));
     }
 
@@ -164,7 +189,7 @@ class LandingPage extends Module
 
     public function addBanner($url_banner)
     {
-    	return Db::getInstance()->execute("INSERT INTO " . _DB_PREFIX_ . "banner_landingpage (url_banner) VALUES ($url_banner)");
+    	return Db::getInstance()->execute("INSERT INTO " . _DB_PREFIX_ . "banner_landingpage (url_banner) VALUES ('".$url_banner."');");
     }
 
     public function deleteBanner($id_banner)
@@ -175,5 +200,18 @@ class LandingPage extends Module
     public function getBanners()
     {
     	return Db::getInstance()->executeS("SELECT * FROM " . _DB_PREFIX_ . "banner_landingpage");
+    }
+
+    private function validarImagen($imagen){
+
+        $imageFileType = pathinfo($imagen, PATHINFO_EXTENSION);
+
+        return getimagesize($imagen) !== false && $imageFileType != null && $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif";
+
+    }
+
+    public function hookDisplayNav($params)
+    {
+        return $this->display(__FILE__, 'landingpage.tpl');
     }
 }
