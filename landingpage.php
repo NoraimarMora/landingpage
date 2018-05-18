@@ -38,19 +38,20 @@ class LandingPage extends Module
 
     public function install()
     {
-    	return parent::install() && $this->installDB() 
-            && $this->registerHook('displayNav');
+    	return parent::install(); //&& $this->installDB() 
+           // && $this->registerHook('displayNav');
     }
 
     public function uninstall()
     {
-    	return parent::uninstall() && $this->uninstallDB() 
+    	return parent::uninstall() //&& $this->uninstallDB() 
             && Configuration::deleteByName('lp_facebook') 
             && Configuration::deleteByName('lp_instagram') 
-            && Configuration::deleteByName('lp_whatsapp');
+            && Configuration::deleteByName('lp_whatsapp')
+            && Configuration::deleteByName('lp_imagen');
     }
 
-    public function installDB()
+    /*public function installDB()
     {
     	return Db::getInstance()->Execute('CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'banner_landingpage`(
     			`id_banner` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -62,7 +63,7 @@ class LandingPage extends Module
     public function uninstallDB()
     {
     	return Db::getInstance()->Execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'banner_landingpage`;');
-    }
+    }*/
 
     public function getContent()
     {
@@ -176,7 +177,8 @@ class LandingPage extends Module
             if(!$this->validarImagen($archivo_destino)) {
                 move_uploaded_file($archivo['tmp_name'], $archivo_destino);
                 $nueva_url = "".Tools::getHttpHost(true).__PS_BASE_URI__."modules/landingpage/img/" . str_replace(' ', '-', $archivo['name']);
-                $this->addBanner($nueva_url);
+                Configuration::updateValue('lp_imagen', $nueva_url);
+                //$this->addBanner($nueva_url);
             }
         }
 
